@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Domain.Games
 {
-    class WWTBAM : Game
+    public class WWTBAM : Game
     {
         public WWTBAM(Player hostPlayer) : base(hostPlayer)
         {

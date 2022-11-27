@@ -16,8 +16,8 @@ namespace Domain
         public String Nickname { get; set; }
         public int Points { get; set; }
 
-        public void sendInput(){ }
-        public void joinGame(String code)
+        public void SendInput(){ }
+        public void JoinGame(String code)
         {
 
         }
