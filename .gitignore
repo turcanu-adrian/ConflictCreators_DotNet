@@ -8,3 +8,8 @@
 /Domain/obj
 /Infrastructure/obj
 *.sln
+/Application/bin/Debug/net6.0
+/ConsolePresentation/bin/Debug/net6.0
+/ConsolePresentation/obj
+/Domain/bin/Debug/net6.0
+/Infrastructure/bin/Debug/net6.0
