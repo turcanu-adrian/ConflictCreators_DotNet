@@ -8,12 +8,18 @@ namespace Domain
 {
     public class Player : BaseEntity
     {
-        public Player(String nickname, String Avatar)
+        public Player(String nickname)
         {
             Nickname = nickname;
             Points = 0;
             Avatar = "default";
         }
+
+        public Player(String nickname, String avatar) : this(nickname)
+        {
+            Avatar = avatar;
+        }
+
         public String Nickname { get; set; }
         public int Points { get; set; }
         public String Avatar { get; set; }
