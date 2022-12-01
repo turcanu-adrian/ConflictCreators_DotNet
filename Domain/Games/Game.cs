@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Domain
+namespace Domain.Games
 {
     public abstract class Game : BaseEntity
     {

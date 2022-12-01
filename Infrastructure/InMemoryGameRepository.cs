@@ -1,5 +1,6 @@
-﻿using Domain;
+﻿using Domain.Games;
 using Application;
+using Domain;
 
 namespace Infrastructure
 {
@@ -15,14 +16,16 @@ namespace Infrastructure
         public void AddGuestPlayerToGame(Player guestPlayer, String gameId)
         {
             var game = _games.FirstOrDefault(o => o.Id.Equals(gameId));
-            if (game == null) throw new InvalidOperationException($"Game with ID {gameId} not found");
+            if (game == null) 
+                throw new InvalidOperationException($"Game with ID {gameId} not found");
 
             game.AddGuestPlayer(guestPlayer);
         }
 
         public void RemoveGuestPlayerFromGame(Player guestPlayer, string gameId) {
             var game = _games.FirstOrDefault(o => o.Id.Equals(gameId));
-            if (game == null) throw new InvalidOperationException($"Game with ID {gameId} not found");
+            if (game == null) 
+                throw new InvalidOperationException($"Game with ID {gameId} not found");
 
             game.RemoveGuestPlayer(guestPlayer);
         }
@@ -30,7 +33,8 @@ namespace Infrastructure
         public Game GetGame(String gameId)
         {
             var game = _games.FirstOrDefault(o => o.Id.Equals(gameId));
-            if (game == null) throw new InvalidOperationException($"Game with ID {gameId} not found");
+            if (game == null) 
+                throw new InvalidOperationException($"Game with ID {gameId} not found");
 
             return game;
         }
