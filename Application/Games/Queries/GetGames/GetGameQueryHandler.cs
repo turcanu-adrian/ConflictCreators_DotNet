@@ -1,4 +1,5 @@
-﻿using Application.Games.Commands.CreateGame;
+﻿using Application.Games.Commands.AddPlayer;
+using Application.Games.Commands.CreateGame;
 using MediatR;
 
 namespace Application.Games.Queries.GetGames
@@ -18,11 +19,20 @@ namespace Application.Games.Queries.GetGames
 
             var gameDto = new GameDto
             {
-                gamemode = game.GetType().ToString(),
-                hostPlayerName = game.HostPlayer.Nickname
+                gamemode = game.GetType().ToString().Split('.').Last(),
+                hostPlayer = new PlayerDto
+                {
+                    avatar = game.HostPlayer.Avatar,
+                    nickname= game.HostPlayer.Nickname,
+                    points = game.HostPlayer.Points
+                },
+                guestPlayers = game.GuestPlayers.Select(i => new PlayerDto
+                    {
+                        avatar = i.Avatar,
+                        nickname = i.Nickname,
+                        points = i.Points
+                    }).ToList()
             };
-
-            Console.WriteLine(game.GetType().ToString());
 
             return Task.FromResult(gameDto);
         }
