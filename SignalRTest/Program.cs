@@ -2,7 +2,6 @@ using Application;
 using Infrastructure;
 using MediatR;
 using SignalRTest.Hubs;
-using Microsoft.Extensions.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 

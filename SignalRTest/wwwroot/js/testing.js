@@ -35,9 +35,17 @@ document.getElementById("createGame").addEventListener("click", function (event)
     event.preventDefault();
 });
 
-document.getElementById("getGames").addEventListener("click", function (event) {
+document.getElementById("getGame").addEventListener("click", function (event) {
     var gameID = document.getElementById("userInput").value;
     connection.invoke("GetGame", gameID).catch(function (err) {
+        return console.error(err.toString());
+    });
+    event.preventDefault();
+});
+
+document.getElementById("joinGame").addEventListener("click", function (event) {
+    var gameID = document.getElementById("userInput").value;
+    connection.invoke("JoinGame", gameID).catch(function (err) {
         return console.error(err.toString());
     });
     event.preventDefault();
