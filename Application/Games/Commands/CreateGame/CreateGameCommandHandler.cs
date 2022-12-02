@@ -14,7 +14,7 @@ namespace Application.Games.Commands.CreateGame
 
         public Task<String> Handle(CreateGameCommand command, CancellationToken cancellationToken)
         {
-            var hostPlayer = new Player(command.HostUsername);
+            var hostPlayer = new Player(command.HostName, command.HostConnectionId);
 
             var game = new WWTBAM(hostPlayer);
 
