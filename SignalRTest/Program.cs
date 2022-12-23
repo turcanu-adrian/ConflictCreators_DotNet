@@ -1,14 +1,21 @@
-using Application;
-using Infrastructure;
+using Application.GameManager;
+using Infrastructure.Repositories;
 using MediatR;
 using SignalRTest.Hubs;
+using Microsoft.EntityFrameworkCore;
+using Application.Abstract;
+using Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorPages();
-builder.Services.AddSingleton<IGameRepository, InMemoryGameRepository>();
-builder.Services.AddMediatR(typeof(IGameRepository));
+builder.Services.AddDbContext<DataContext>(options => options.UseSqlServer(@"Server=(localdb)\MSSQLLocalDB;Database=ConflictCreators;Trusted_Connection=True"));
+builder.Services.AddSingleton<IGameManager, GameManager>();
+builder.Services.AddScoped<IPromptRepository, PromptRepository>();
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+builder.Services.AddMediatR(typeof(IPromptRepository));
 builder.Services.AddSignalR(options =>
 {
     options.EnableDetailedErrors = true;

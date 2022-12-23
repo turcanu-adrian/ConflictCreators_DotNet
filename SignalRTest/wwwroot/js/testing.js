@@ -14,29 +14,16 @@ connection.on("ReceiveMessage", function (message) {
     li.textContent = `${message}`;
 });
 
-document.getElementById("stopConnection").addEventListener("click", function (event) {
-    connection.stop();
-    event.PreventDefault();
-});
-
-document.getElementById("startConnection").addEventListener("click", function (event) {
-    connection.start().then(function () {
-        document.getElementById("createGame").disabled = false;
-    }).catch(function (err) {
-        return console.error(err.toString());
-    });
-    event.preventDefault();
-});
-
 document.getElementById("createGame").addEventListener("click", function (event) {
-    connection.invoke("CreateNewGame", "gusky").catch(function (err) {
+    var name = document.getElementById("nameInput").value;
+    connection.invoke("CreateNewGame", name).catch(function (err) {
         return console.error(err.toString());
     });
     event.preventDefault();
 });
 
 document.getElementById("getGame").addEventListener("click", function (event) {
-    var gameID = document.getElementById("userInput").value;
+    var gameID = document.getElementById("gameIdInput").value;
     connection.invoke("GetGame", gameID).catch(function (err) {
         return console.error(err.toString());
     });
@@ -44,9 +31,34 @@ document.getElementById("getGame").addEventListener("click", function (event) {
 });
 
 document.getElementById("joinGame").addEventListener("click", function (event) {
-    var gameID = document.getElementById("userInput").value;
-    connection.invoke("JoinGame", gameID).catch(function (err) {
+    var name = document.getElementById("nameInput").value;
+    var gameID = document.getElementById("gameIdInput").value;
+    connection.invoke("JoinGame", name, gameID).catch(function (err) {
         return console.error(err.toString());
     });
     event.preventDefault();
+});
+
+document.getElementById("startGame").addEventListener("click", function (event) {
+    var gameID = document.getElementById("gameIdInput").value;
+    connection.invoke("StartGame", gameID).catch(function (err) {
+        return console.error(err.toString());
+    });
+    event.preventDefault();
+});
+
+document.getElementById("sendAnswer").addEventListener("click", function (event) {
+    var gameID = document.getElementById("gameIdInput").value;
+    var answer = document.getElementById("answerInput").value;
+    connection.invoke("SendPlayerAnswer", answer, gameID).catch(function (err) {
+        return console.error(err.toString());
+    });
+    event.preventDefault();
+});
+
+
+connection.start().then(function () {
+    document.getElementById("createGame").disabled = false;
+}).catch(function (err) {
+    return console.error(err.toString());
 });
