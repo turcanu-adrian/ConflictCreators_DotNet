@@ -1,20 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Domain.Games.Elements;
 
 namespace Domain.Games
 {
-    public class WWTBAM : Game
+    public class WWTBAM : BaseGame
     {
         public WWTBAM(Player hostPlayer) : base(hostPlayer)
         {
             Cheats = new String[] { "OneGuy", "BackseatGaming", "JournalistMode" };
-            CurrentDifficulty = 0;
+            CurrentTier = 100;
         }
 
         public String[] Cheats { get; }
-        public int CurrentDifficulty { get; }
+        public int CurrentTier { get; set; }
+        
     }
-}
