@@ -1,13 +1,20 @@
-﻿using Domain;
-using Domain.Games;
+﻿using Domain.Games;
+using Domain;
 using MediatR;
+using Application.Abstract;
 
-namespace Application.Games.Commands.CreateGame
+namespace Application.Game.Commands
 {
+    public class CreateGameCommand : IRequest<String>
+    {
+        public string HostName { get; set; } = null!;
+        public string HostConnectionId { get; set; } = null!;
+    }
+
     public class CreateGameCommandHandler : IRequestHandler<CreateGameCommand, String>
     {
-        private readonly IGameRepository _gameRepository;
-        public CreateGameCommandHandler(IGameRepository gameRepository) 
+        private readonly IGameManager _gameRepository;
+        public CreateGameCommandHandler(IGameManager gameRepository)
         {
             _gameRepository = gameRepository;
         }
