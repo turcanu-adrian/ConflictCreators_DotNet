@@ -1,9 +1,11 @@
-﻿using Application.Games.Commands.CreateGame;
-using Application.Games.Commands.JoinGame;
-using Application.Games.Commands.AddPlayer;
+﻿using Application.Game.Commands;
+using Application.Game.Queries;
 using MediatR;
 using Microsoft.AspNetCore.SignalR;
-using Application.Games.Queries.GetGames;
+using Application.Game.Responses;
+using System.Text.Json;
+using Application.Prompts.Commands;
+using Domain.Games.Elements;
 
 namespace SignalRTest.Hubs
 {
@@ -16,53 +18,89 @@ namespace SignalRTest.Hubs
             _mediator = mediator;
         }
 
-        public override async Task OnConnectedAsync()
+        public override async Task OnDisconnectedAsync(Exception exception)
         {
-            Console.WriteLine(Context.ConnectionId + " has connected");
+            Console.WriteLine(Context.ConnectionId + " has disconnected, removing them from game");
+            String gameId = await _mediator.Send(new GetGameIdByPlayerIdQuery
+            {
+                PlayerId = Context.ConnectionId
+            });
+
+            String result = await _mediator.Send(new RemovePlayerCommand
+            {
+                playerId = Context.ConnectionId,
+                gameId = gameId
+            });
+
+            await base.OnDisconnectedAsync(exception);
+            await GetGame(result);
         }
 
-        public async Task CreateNewGame(String HostName)
+        public async Task CreateNewGame(String nickname)
         {
             Console.WriteLine("Creating New Game");
 
-            var gameId = await _mediator.Send(new CreateGameCommand
+            String gameId = await _mediator.Send(new CreateGameCommand
             {
-                HostName = "Gusky",
-                HostConnectionId = Context.ConnectionId/*,
-                Game = new GameDto
-                {
-                    gamemode = "WWTBAM",
-                    hostPlayerName = "Gusky"
-                }*/
+                HostName = nickname,
+                HostConnectionId = Context.ConnectionId
             });
 
             await Groups.AddToGroupAsync(Context.ConnectionId, gameId);
-            await Clients.Caller.SendAsync("ReceiveMessage", "New game created successfully with ID " + gameId);
+            await GetGame(gameId);
         }
 
-        public async Task JoinGame(String id)
+        public async Task JoinGame(String name, String gameId)
         {
-            var _gameId = await _mediator.Send(new AddPlayerCommand
+            String result = await _mediator.Send(new AddPlayerCommand
             {
-                gameId = id,
-                player = new PlayerDto 
-                {
-                    nickname = "GuestPlayer651",
-                    connectionId = Context.ConnectionId
-                }
+                gameId = gameId,
+                nickname = name,
+                connectionId = Context.ConnectionId
             });
-            await Clients.Group(id).SendAsync("ReceiveMessage", "Player GuestPlayer651 has joined the game " + id);
-            await Groups.AddToGroupAsync(Context.ConnectionId, _gameId);
+
+            await Groups.AddToGroupAsync(Context.ConnectionId, gameId);
+            await GetGame(gameId);
         }
 
         public async Task GetGame(String id)
         {
-            var game = await _mediator.Send(new GetGameQuery
+            GameResponse game = await _mediator.Send(new GetGameByIdQuery
             {
                 Id = id
             });
 
-            await Clients.Caller.SendAsync("ReceiveMessage", "Requested game with id " + id + " || Host is " + game.hostPlayer.nickname + "|| Guest players are " + String.Join("||", game.guestPlayers.Select(it => "Name=" + it.nickname + " Points=" + it.points + " Avatar=" + it.avatar).ToList()));
+            await Clients.Group(id).SendAsync("ReceiveMessage", JsonSerializer.Serialize(game));
         }
+
+        public async Task StartGame(String id)
+        {
+            Prompt result = await _mediator.Send(new AddPromptCommand
+            {
+                Question = "Who am I talking to?",
+                CorrectAnswer = "LULE",
+                WrongAnswers = new[] { "IDK", "LMAO", "LULW" }
+            });
+
+            String gameId = await _mediator.Send(new StartGameCommand
+            {
+                gameId = id
+            });
+
+            await GetGame(gameId);
+        }
+
+        public async Task SendPlayerAnswer(String answer, String gameId)
+        {
+            String result = await _mediator.Send(new SetPlayerAnswerCommand
+            {
+                answer = answer,
+                playerId = Context.ConnectionId,
+                gameId = gameId
+            });
+
+            await GetGame(result);
+        }
+
     }
 }
