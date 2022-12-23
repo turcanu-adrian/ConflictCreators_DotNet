@@ -1,22 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
+﻿
 namespace Domain
 {
-    public class Player : BaseEntity
+    public class Player
     {
-        public Player(String nickname, String connectionId)
+        public Player(String nickname, String id)
         {
             Nickname = nickname;
             Points = 0;
             Avatar = "default";
-            ConnectionId = connectionId;
+            Id = id;
         }
 
-        public Player(String nickname, String connectionId, String avatar) : this(nickname, connectionId)
+        public Player(String nickname, String id, String avatar) : this(nickname, id)
         {
             Avatar = avatar;
         }
@@ -24,11 +19,7 @@ namespace Domain
         public String Nickname { get; set; }
         public int Points { get; set; }
         public String Avatar { get; set; }
-        public String ConnectionId { get; set; }
-
-        public void SendInput()
-        { 
-        
-        }
+        public String Id { get; set; }
+        public String Answer { get; set; }
     }
 }
