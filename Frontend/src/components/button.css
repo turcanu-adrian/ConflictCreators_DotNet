@@ -1,0 +1,15 @@
+.rightAnswer {
+    background-color: green;
+}
+
+.wrongAnswer {
+    background-color: red;
+}
+
+.neutralAnswer {
+    background-color: gray;
+}
+
+.checkingAnswer {
+    background-color: yellow;
+}
