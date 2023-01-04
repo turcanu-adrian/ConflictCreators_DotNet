@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using MediatR;
-using SignalRTest.DTOs;
+using WebAPI.DTOs;
 
-namespace SignalRTest.Controllers
+namespace WebAPI.Controllers
 {
 /*    [Route("api/v1/[controller]")]
     [ApiController]

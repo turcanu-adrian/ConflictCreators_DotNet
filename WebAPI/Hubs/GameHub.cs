@@ -6,7 +6,7 @@ using Application.Games.Base.Queries;
 using Application.Games.Base.Commands;
 using Application.Games.Base.Responses;
 
-namespace SignalRTest.Hubs
+namespace WebAPI.Hubs
 {
     public class GameHub : Hub<IGameClient>, IGameHub
     {

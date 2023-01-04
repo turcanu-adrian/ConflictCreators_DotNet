@@ -1,6 +1,6 @@
 using Infrastructure.Repositories;
 using MediatR;
-using SignalRTest.Hubs;
+using WebAPI.Hubs;
 using Microsoft.EntityFrameworkCore;
 using Application.Abstract;
 using Infrastructure;

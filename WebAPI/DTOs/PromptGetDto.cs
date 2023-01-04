@@ -1,4 +1,4 @@
-﻿namespace SignalRTest.DTOs
+﻿namespace WebAPI.DTOs
 {
     public class PromptGetDto
     {
