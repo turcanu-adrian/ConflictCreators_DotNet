@@ -1,15 +1,16 @@
-﻿using Application.Game.Commands;
-using Application.Game.Queries;
-using MediatR;
+﻿using MediatR;
 using Microsoft.AspNetCore.SignalR;
-using Application.Game.Responses;
 using System.Text.Json;
 using Application.Prompts.Commands;
 using Domain.Games.Elements;
+using Application.Games.Commands;
+using Application.Abstract;
+using Application.Games.Queries;
+using Application.Games.Responses;
 
 namespace SignalRTest.Hubs
 {
-    public class GameHub : Hub
+    public class GameHub : Hub<IGameClient>, IGameHub
     {
         private readonly IMediator _mediator;
 
@@ -18,22 +19,31 @@ namespace SignalRTest.Hubs
             _mediator = mediator;
         }
 
+        public override async Task OnConnectedAsync()
+        {
+            Console.WriteLine(Context.ConnectionId + " has connected");
+        }
+
         public override async Task OnDisconnectedAsync(Exception exception)
         {
             Console.WriteLine(Context.ConnectionId + " has disconnected, removing them from game");
+
             String gameId = await _mediator.Send(new GetGameIdByPlayerIdQuery
             {
                 PlayerId = Context.ConnectionId
             });
 
-            String result = await _mediator.Send(new RemovePlayerCommand
+            if (gameId != "nogamefound")
             {
-                playerId = Context.ConnectionId,
-                gameId = gameId
-            });
+                String result = await _mediator.Send(new RemovePlayerCommand
+                {
+                    playerId = Context.ConnectionId,
+                    gameId = gameId
+                });
 
-            await base.OnDisconnectedAsync(exception);
-            await GetGame(result);
+                await base.OnDisconnectedAsync(exception);
+                await GetGame(result);
+            }
         }
 
         public async Task CreateNewGame(String nickname)
@@ -47,6 +57,7 @@ namespace SignalRTest.Hubs
             });
 
             await Groups.AddToGroupAsync(Context.ConnectionId, gameId);
+            await Clients.Caller.JoinedGameAs("host");
             await GetGame(gameId);
         }
 
@@ -60,6 +71,7 @@ namespace SignalRTest.Hubs
             });
 
             await Groups.AddToGroupAsync(Context.ConnectionId, gameId);
+            await Clients.Caller.JoinedGameAs(result);
             await GetGame(gameId);
         }
 
@@ -70,7 +82,7 @@ namespace SignalRTest.Hubs
                 Id = id
             });
 
-            await Clients.Group(id).SendAsync("ReceiveMessage", JsonSerializer.Serialize(game));
+            await Clients.Group(id).ReceiveGameState(JsonSerializer.Serialize(game));
         }
 
         public async Task StartGame(String id)
@@ -80,6 +92,14 @@ namespace SignalRTest.Hubs
                 Question = "Who am I talking to?",
                 CorrectAnswer = "LULE",
                 WrongAnswers = new[] { "IDK", "LMAO", "LULW" }
+            });
+
+            Prompt otherResult = await _mediator.Send(new AddPromptCommand
+            {
+                User = "Gusky",
+                Question = "To whom am I talking LULE",
+                CorrectAnswer = "forsen",
+                WrongAnswers = new[] { "xqc", "ice", "nem" }
             });
 
             String gameId = await _mediator.Send(new StartGameCommand
@@ -92,15 +112,23 @@ namespace SignalRTest.Hubs
 
         public async Task SendPlayerAnswer(String answer, String gameId)
         {
-            String result = await _mediator.Send(new SetPlayerAnswerCommand
+            (string, string) result = await _mediator.Send(new SetPlayerAnswerCommand
             {
                 answer = answer,
                 playerId = Context.ConnectionId,
                 gameId = gameId
             });
 
-            await GetGame(result);
+            if (result.Item1 == "host")
+            {
+                await Task.Delay(4000);
+                await Clients.Caller.ReceiveRightAnswer(result.Item2);
+                await Task.Delay(8000);
+            }
+
+            await GetGame(gameId);
         }
+
 
     }
 }
