@@ -1,4 +1,3 @@
-using Application.GameManager;
 using Infrastructure.Repositories;
 using MediatR;
 using SignalRTest.Hubs;
@@ -9,6 +8,12 @@ using Infrastructure;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+
+builder.Services.AddControllers();
+// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+builder.Services.AddCors();
 builder.Services.AddRazorPages();
 builder.Services.AddDbContext<DataContext>(options => options.UseSqlServer(@"Server=(localdb)\MSSQLLocalDB;Database=ConflictCreators;Trusted_Connection=True"));
 builder.Services.AddSingleton<IGameManager, GameManager>();
@@ -24,25 +29,25 @@ builder.Services.AddSignalR(options =>
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (!app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-    app.UseHsts();
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 
-
 app.UseHttpsRedirection();
-app.UseStaticFiles();
 
-app.UseRouting();
+app.UseCors(
+    config => config.AllowAnyHeader()
+            .AllowAnyMethod()
+            .WithOrigins("http://localhost:3000")
+            .AllowCredentials()
+            );
 
 app.UseAuthorization();
 
-app.MapRazorPages();
+app.MapControllers();
 app.MapHub<GameHub>("/gameHub");
-
 app.Run();
 
 Console.WriteLine("APP STARTED");
-

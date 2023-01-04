@@ -1,12 +1,10 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.SignalR;
 using System.Text.Json;
-using Application.Prompts.Commands;
-using Domain.Games.Elements;
-using Application.Games.Commands;
 using Application.Abstract;
-using Application.Games.Queries;
-using Application.Games.Responses;
+using Application.Games.Base.Queries;
+using Application.Games.Base.Commands;
+using Application.Games.Base.Responses;
 
 namespace SignalRTest.Hubs
 {
@@ -87,20 +85,6 @@ namespace SignalRTest.Hubs
 
         public async Task StartGame(String id)
         {
-            Prompt result = await _mediator.Send(new AddPromptCommand
-            {
-                Question = "Who am I talking to?",
-                CorrectAnswer = "LULE",
-                WrongAnswers = new[] { "IDK", "LMAO", "LULW" }
-            });
-
-            Prompt otherResult = await _mediator.Send(new AddPromptCommand
-            {
-                User = "Gusky",
-                Question = "To whom am I talking LULE",
-                CorrectAnswer = "forsen",
-                WrongAnswers = new[] { "xqc", "ice", "nem" }
-            });
 
             String gameId = await _mediator.Send(new StartGameCommand
             {
@@ -112,23 +96,29 @@ namespace SignalRTest.Hubs
 
         public async Task SendPlayerAnswer(String answer, String gameId)
         {
-            (string, string) result = await _mediator.Send(new SetPlayerAnswerCommand
+            string playerType = await _mediator.Send(new SetPlayerAnswerCommand
             {
                 answer = answer,
                 playerId = Context.ConnectionId,
                 gameId = gameId
             });
 
-            if (result.Item1 == "host")
+            if (playerType == "host")
             {
-                await Task.Delay(4000);
-                await Clients.Caller.ReceiveRightAnswer(result.Item2);
-                await Task.Delay(8000);
+                string rightAnswer = await _mediator.Send(new GetRightAnswerQuery
+                {
+                    gameId = gameId
+                });
+
+                /*if (answer == rightAnswer)
+                    *//*increase points*//*
+                else
+                    *//*end game*/
+
+                await Clients.Caller.ReceiveRightAnswer(rightAnswer);
             }
 
             await GetGame(gameId);
         }
-
-
     }
 }
