@@ -4,11 +4,12 @@ using MediatR;
 
 namespace Application.Prompts.Commands
 {
-    public class AddPromptCommand : IRequest<Prompt> 
+    public class AddPromptCommand : IRequest<Prompt>
     {
-        public String Question { get; set; } = null!;
-        public String CorrectAnswer { get; set; } = null!;
-        public String[] WrongAnswers { get; set; } = null!;
+        public string User { get; set; } = "default";
+        public string Question { get; set; } = null!;
+        public string CorrectAnswer { get; set; } = null!;
+        public string[] WrongAnswers { get; set; } = null!;
     }
 
     public class AddPromptCommandHandler : IRequestHandler<AddPromptCommand, Prompt>
@@ -17,13 +18,14 @@ namespace Application.Prompts.Commands
 
         public AddPromptCommandHandler(IUnitOfWork unitOfWork)
         {
-            _unitOfWork =   unitOfWork;
+            _unitOfWork = unitOfWork;
         }
 
-        public async Task<Prompt> Handle(AddPromptCommand command, CancellationToken cancellationToken) 
+        public async Task<Prompt> Handle(AddPromptCommand command, CancellationToken cancellationToken)
         {
             Prompt prompt = new Prompt
             {
+                User = command.User,
                 Question = command.Question,
                 CorrectAnswer = command.CorrectAnswer,
                 WrongAnswers = command.WrongAnswers

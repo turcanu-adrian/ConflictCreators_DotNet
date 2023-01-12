@@ -1,17 +1,19 @@
 ﻿using Domain.Games;
-using Domain;
 using MediatR;
 using Application.Abstract;
+using Domain.Games.Elements;
 
-namespace Application.Game.Commands
+namespace Application.Games.Base.Commands
 {
-    public class CreateGameCommand : IRequest<String>
+    public class CreateGameCommand : IRequest<string>
     {
         public string HostName { get; set; } = null!;
         public string HostConnectionId { get; set; } = null!;
+        public string GameType { get; set; } = null!;
+        public List<string> PromptsUsersFilter = null!;
     }
 
-    public class CreateGameCommandHandler : IRequestHandler<CreateGameCommand, String>
+    public class CreateGameCommandHandler : IRequestHandler<CreateGameCommand, string>
     {
         private readonly IGameManager _gameRepository;
         public CreateGameCommandHandler(IGameManager gameRepository)
@@ -19,11 +21,14 @@ namespace Application.Game.Commands
             _gameRepository = gameRepository;
         }
 
-        public Task<String> Handle(CreateGameCommand command, CancellationToken cancellationToken)
+        public Task<string> Handle(CreateGameCommand command, CancellationToken cancellationToken)
         {
             var hostPlayer = new Player(command.HostName, command.HostConnectionId);
-
-            var game = new WWTBAM(hostPlayer);
+            
+            /*if (command.GameType == "WWTBAM") 
+            {
+            }*/
+            var game = new WWTBAMGame(hostPlayer, command.PromptsUsersFilter);
 
             _gameRepository.CreateGame(game);
 

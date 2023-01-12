@@ -8,6 +8,6 @@ namespace Application.Abstract
         void Remove(Prompt prompt);
         Task<List<Prompt>> GetAll();
         Task Update(Prompt prompt);
-        Task<Prompt> GetByUser(String user);
+        Task<Prompt> GetRandomByUsers(List<string> users);
     }
 }
