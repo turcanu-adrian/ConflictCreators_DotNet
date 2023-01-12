@@ -1,10 +1,13 @@
-﻿using Domain.Games.Elements;
+﻿using Domain;
+using Domain.Games.Elements;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
 
 namespace Infrastructure
 {
-    public class DataContext : DbContext
+    public class DataContext : IdentityDbContext<IdentityUser, IdentityRole, string>
     {
         public DataContext(DbContextOptions options) : base(options) 
         {

@@ -25,10 +25,12 @@ namespace Infrastructure.Repositories
                 .ToListAsync();
         }
 
-        public async Task<Prompt> GetByUser(String user)
+        public async Task<Prompt> GetRandomByUsers(List<string> users)
         {
-            return await _context.Prompts
-                .FirstOrDefaultAsync(p => p.User == user);
+            Random rnd = new Random();
+            List<Prompt> promptList =  await _context.Prompts.Where(it => users.Contains(it.User)).ToListAsync();
+            Prompt prompt = promptList[rnd.Next(promptList.Count)];
+            return prompt;
         }
 
         public void Remove(Prompt prompt) 
