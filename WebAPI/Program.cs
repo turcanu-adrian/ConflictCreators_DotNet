@@ -4,6 +4,10 @@ using WebAPI.Hubs;
 using Microsoft.EntityFrameworkCore;
 using Application.Abstract;
 using Infrastructure;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,16 +19,45 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddCors();
 builder.Services.AddRazorPages();
+
 builder.Services.AddDbContext<DataContext>(options => options.UseSqlServer(@"Server=(localdb)\MSSQLLocalDB;Database=ConflictCreators;Trusted_Connection=True"));
 builder.Services.AddSingleton<IGameManager, GameManager>();
 builder.Services.AddScoped<IPromptRepository, PromptRepository>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+builder.Services.AddIdentityCore<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
+    .AddEntityFrameworkStores<DataContext>();
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateAudience = false,
+        ValidAudience = "audience",
+        ValidIssuer = "https://localhost:7242",
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Environment.GetEnvironmentVariable("SECURITY_KEY")))
+    };
+});
+
+builder.Services.AddAuthorization();
+
+builder.Services.Configure<IdentityOptions>(options =>
+{
+    options.User.RequireUniqueEmail = true;
+});
 
 builder.Services.AddMediatR(typeof(IPromptRepository));
 builder.Services.AddSignalR(options =>
 {
     options.EnableDetailedErrors = true;
 });
+
 
 var app = builder.Build();
 
@@ -45,9 +78,8 @@ app.UseCors(
             );
 
 app.UseAuthorization();
+app.UseAuthentication();
 
 app.MapControllers();
 app.MapHub<GameHub>("/gameHub");
 app.Run();
-
-Console.WriteLine("APP STARTED");
