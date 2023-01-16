@@ -28,16 +28,21 @@ namespace WebAPI.Controllers
         [Authorize]
         public async Task<IActionResult> AddPrompt([FromBody] PromptAddDto prompt)
         {
+            string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
             var result = await _mediator.Send(new AddPromptCommand
             {
-                UserId = User.Identity.GetUserId(),
+                PromptSetId= prompt.PromptSetId,
+                UserId = userId,
                 Question = prompt.Question,
                 CorrectAnswer = prompt.CorrectAnswer,
                 WrongAnswers = prompt.WrongAnswers
             });
-            Console.WriteLine("AUTHORIZED");
-            return Ok("let's see");
+
+            if (result)
+                return Ok("worked");
+
+            return BadRequest("failed");
         }
 
         [HttpPost]

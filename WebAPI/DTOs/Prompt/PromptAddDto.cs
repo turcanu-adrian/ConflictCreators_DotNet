@@ -5,6 +5,9 @@ namespace WebAPI.DTOs.Prompt
     public class PromptAddDto
     {
         [Required]
+        public string PromptSetId { get; set; }
+
+        [Required]
         public string Question { get; set; }
 
         [Required]

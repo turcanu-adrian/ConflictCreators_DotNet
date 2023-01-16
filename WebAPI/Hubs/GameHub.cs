@@ -55,7 +55,7 @@ namespace WebAPI.Hubs
                 HostName = nickname,
                 HostConnectionId = Context.ConnectionId,
                 GameType = "WWTBAM",
-                PromptsUsersFilter = new List<string> { "default", "Gusky" }
+                promptSetId = new List<string> { "97d2cfc1a93646a990abf53166da7630" }
             });
 
             await Groups.AddToGroupAsync(Context.ConnectionId, gameId);

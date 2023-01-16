@@ -36,7 +36,8 @@ namespace WebAPI
                 return Ok(new
                 {
                     token = new JwtSecurityTokenHandler().WriteToken(result),
-                    expiration = result.ValidTo
+                    expiration = result.ValidTo,
+                    username = userDto.UserName
                 });
             }
 
@@ -66,15 +67,6 @@ namespace WebAPI
             }
 
             return Ok("User created successfully");
-        }
-
-        [HttpPost]
-        [Route("test")]
-        [Authorize]
-        public async Task<IActionResult> TestAuth()
-        {
-            Console.WriteLine("AUTHORIZED");
-            return Ok("let's see");
         }
     }
 }
