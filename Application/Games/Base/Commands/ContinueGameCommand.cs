@@ -24,7 +24,7 @@ namespace Application.Games.Base.Commands
         public async Task<Unit> Handle(ContinueGameCommand command, CancellationToken cancellationToken) 
         {
             BaseGame game = _gameManager.GetGame(command.GameId);
-            game.CurrentPrompt = await _promptRepository.GetRandomByUsers(game.PromptsUsersFilter);
+            game.CurrentPrompt = await _promptRepository.GetRandomBySets(game.PromptSetsFilter);
 
             if (game.CurrentPhase == GamePhase.lobby)
                 game.CurrentPhase = GamePhase.prompt;

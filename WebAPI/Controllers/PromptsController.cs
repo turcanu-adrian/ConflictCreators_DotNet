@@ -1,61 +1,63 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using MediatR;
 using WebAPI.DTOs;
+using Microsoft.AspNetCore.Authorization;
+using WebAPI.DTOs.Prompt;
+using Application.Prompts.Commands;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNet.Identity;
+using Application;
+using System.Security.Claims;
+using Microsoft.AspNetCore.SignalR;
 
 namespace WebAPI.Controllers
 {
-/*    [Route("api/v1/[controller]")]
-    [ApiController]
+    [Authorize]
+    [Route("api/prompts")]
     public class PromptsController : ControllerBase
     {
-        public readonly IMapper _mapper;
-        public readonly IMediator _mediator;
+        private readonly IMediator _mediator;
 
-        *//*private readonly MySettingsSection _settings;*//*
-
-        public PromptsController(IMapper mapper, IMediator mediator)
+        public PromptsController(IMediator mediator)
         {
             _mediator = mediator;
-            _mapper = mapper;
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddPrompt([FromBody] PromptPutPostDto prompt)
+        [Route("add")]
+        [Authorize]
+        public async Task<IActionResult> AddPrompt([FromBody] PromptAddDto prompt)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
 
             var result = await _mediator.Send(new AddPromptCommand
             {
+                UserId = User.Identity.GetUserId(),
                 Question = prompt.Question,
                 CorrectAnswer = prompt.CorrectAnswer,
                 WrongAnswers = prompt.WrongAnswers
             });
-
-            var mappedResult = _mapper.Map<PromptGetDto>(result);
-
-            return CreatedAtAction(nameof(GetById), new { id = mappedResult.Id}, mappedResult);
+            Console.WriteLine("AUTHORIZED");
+            return Ok("let's see");
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetPrompts()
+        [HttpPost]
+        [Route("addSet")]
+        [Authorize]
+        public async Task<IActionResult> AddPromptSet([FromBody] PromptSetAddDto promptSet) 
         {
-            var result = await _mediator.Send(new GetAllPromptsCommand { });
-            var mappedResult = _mapper.Map<List<PromptGetDto>>(result);
-            return Ok(mappedResult);
+            string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var result = await _mediator.Send(new AddPromptSetCommand
+            {
+                UserId = userId,
+                Name = promptSet.Name,
+                Tags = promptSet.Tags
+            });
+
+            if (result)
+                return Ok("worked");
+
+            return BadRequest("failed");
         }
-
-        [HttpGet]
-        [Route("{id}")]
-        public async Task<IActionResult> GetById(int id)
-        {
-            var result = await _mediator.Send(new GetPromptByIdQuery { PromptId = id });
-
-            if (result == null)
-                return NotFound();
-
-            var mappedResult = _mapper.Map<PromptGetDto>(result);
-            return Ok(mappedResult);
-        }
-    }*/
+    }
 }

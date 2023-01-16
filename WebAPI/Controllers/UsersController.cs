@@ -2,70 +2,63 @@
 using Domain.Games.Elements;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
-using Microsoft.EntityFrameworkCore;
+using MediatR;
+using Application.Users.Commands;
+using WebAPI.DTOs.User;
+using Microsoft.AspNetCore.Authorization;
 
-namespace WebAPI.Controllers
+namespace WebAPI
 {
     [Route("api/users")]
     public class UsersController : ControllerBase
     {
-        private readonly UserManager<User> _userManager = null;
+        private readonly IMediator _mediator;
+
+        public UsersController(IMediator mediator)
+        {
+            _mediator = mediator;
+        }
 
         [HttpPost]
         [Route("login")]
-        public async Task<IActionResult> Login(string userName, string password)
+        public async Task<IActionResult> Login([FromBody] UserLoginDto userDto)
         {
-            var user = await _userManager.FindByNameAsync(userName);
-
-            if (user != null && await _userManager.CheckPasswordAsync(user, password))
+            Console.WriteLine(userDto.UserName);
+            var result = await _mediator.Send(new LoginUserCommand
             {
-                var authClaims = new List<Claim>
-                {
-                    new Claim(ClaimTypes.Name, user.UserName)
-                };
+                UserName = userDto.UserName,
+                Password = userDto.Password
+            });
 
-                var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Environment.GetEnvironmentVariable("SECURITY_KEY")));
-
-                var token = new JwtSecurityToken(
-                    issuer: "https://localhost:7242",
-                    claims: authClaims,
-                    expires: DateTime.Now.AddHours(3),
-                    signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256)
-                    );
-
+            if (result!=null)
+            {
                 return Ok(new
                 {
-                    token = new JwtSecurityTokenHandler().WriteToken(token),
-                    expiration = token.ValidTo
+                    token = new JwtSecurityTokenHandler().WriteToken(result),
+                    expiration = result.ValidTo
                 });
             }
+
             return Unauthorized();
         }
 
         [HttpPost]
         [Route("register")]
-        public async Task<IActionResult> Register(string userName, string password)
+        public async Task<IActionResult> Register([FromBody] UserRegisterDto userDto)
         {
-            var userExists = await _userManager.FindByNameAsync(userName);
+            Console.WriteLine("New register request with parameters " + userDto.UserName + " " + userDto.Email + " " + userDto.Password);
+            IdentityResult result = await _mediator.Send(new RegisterUserCommand
+            {
+                UserName = userDto.UserName,
+                Email = userDto.Email,
+                Password = userDto.Password
+            });
 
-            if (userExists != null)
+            if (result == null)
             {
                 return BadRequest("User already exists");
             }
-
-            List<Prompt> prompts = new List<Prompt>();
-
-            User user = new User
-            {
-                UserName = userName,
-                Prompts = prompts
-            };
-
-            var result = await _userManager.CreateAsync(user, password);
 
             if (!result.Succeeded)
             {
@@ -73,6 +66,15 @@ namespace WebAPI.Controllers
             }
 
             return Ok("User created successfully");
+        }
+
+        [HttpPost]
+        [Route("test")]
+        [Authorize]
+        public async Task<IActionResult> TestAuth()
+        {
+            Console.WriteLine("AUTHORIZED");
+            return Ok("let's see");
         }
     }
 }

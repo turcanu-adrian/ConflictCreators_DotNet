@@ -8,6 +8,7 @@ using Application.Games.Base.Responses;
 using Domain.Enums;
 using Application.Games.WWTBAM.Responses;
 using Application.Games.WWTBAM.Commands;
+using Application.Prompts.Commands;
 
 namespace WebAPI.Hubs
 {
@@ -49,8 +50,6 @@ namespace WebAPI.Hubs
 
         public async Task CreateNewGame(string nickname)
         {
-            Console.WriteLine("Creating New Game");
-
             string gameId = await _mediator.Send(new CreateGameCommand
             {
                 HostName = nickname,
@@ -66,6 +65,8 @@ namespace WebAPI.Hubs
 
         public async Task JoinGame(String name, String gameId)
         {
+            Console.WriteLine("new player joined game");
+
             PlayerType result = await _mediator.Send(new AddPlayerCommand
             {
                 GameId = gameId,

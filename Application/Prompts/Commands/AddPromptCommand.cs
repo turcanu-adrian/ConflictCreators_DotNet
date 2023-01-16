@@ -1,12 +1,14 @@
 ﻿using Application.Abstract;
+using Domain;
 using Domain.Games.Elements;
 using MediatR;
+using Microsoft.AspNetCore.Identity;
 
 namespace Application.Prompts.Commands
 {
     public class AddPromptCommand : IRequest<Prompt>
     {
-        public string User { get; set; } = "default";
+        public string UserId { get; set; }
         public string Question { get; set; } = null!;
         public string CorrectAnswer { get; set; } = null!;
         public string[] WrongAnswers { get; set; } = null!;
@@ -15,6 +17,7 @@ namespace Application.Prompts.Commands
     public class AddPromptCommandHandler : IRequestHandler<AddPromptCommand, Prompt>
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly UserManager<User> _userManager;
 
         public AddPromptCommandHandler(IUnitOfWork unitOfWork)
         {
@@ -23,14 +26,14 @@ namespace Application.Prompts.Commands
 
         public async Task<Prompt> Handle(AddPromptCommand command, CancellationToken cancellationToken)
         {
+            
             Prompt prompt = new Prompt
             {
-                User = command.User,
                 Question = command.Question,
                 CorrectAnswer = command.CorrectAnswer,
                 WrongAnswers = command.WrongAnswers
             };
-
+            
             await _unitOfWork.PromptRepository.Add(prompt);
             await _unitOfWork.Save();
 

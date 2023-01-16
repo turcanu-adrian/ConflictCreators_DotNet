@@ -9,6 +9,7 @@ namespace Application.Abstract
     public interface IUnitOfWork : IDisposable
     {
         public IPromptRepository PromptRepository { get; }
+        public IPromptSetRepository PromptSetRepository { get; }
         Task Save();
     }
 }

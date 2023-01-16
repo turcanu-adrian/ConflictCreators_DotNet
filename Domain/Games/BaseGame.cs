@@ -7,7 +7,7 @@ namespace Domain.Games
 {
     public abstract class BaseGame : BaseEntity
     {
-        public BaseGame(Player hostPlayer, GameType gameType, List<string> promptsUsersFilter)
+        public BaseGame(Player hostPlayer, GameType gameType, List<string> promptSetsFilter)
         {
             HostPlayer = hostPlayer;
             GuestPlayers = new();
@@ -15,9 +15,9 @@ namespace Domain.Games
             CurrentPhase = GamePhase.lobby;
             MaxGuestPlayers = 4;
             Type = gameType;
-            PromptsUsersFilter = promptsUsersFilter;
+            PromptSetsFilter = promptSetsFilter;
         }
-        public List<string> PromptsUsersFilter { get; set; }
+        public List<string> PromptSetsFilter { get; set; }
         public GameType Type { get; set; }
         public Player HostPlayer { get; }
         public List<Player> GuestPlayers { get; }
