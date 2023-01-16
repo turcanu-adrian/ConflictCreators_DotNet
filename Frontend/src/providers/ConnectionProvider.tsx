@@ -11,14 +11,12 @@ const ConnectionProvider = (props: ConnectionProviderProps) => {
    const [ connection, setConnection ] = useState<HubConnection | null>(null);
 
     useEffect(() => {
-        const newConnection = new HubConnectionBuilder().withUrl('https://localhost:7025/gamehub').withAutomaticReconnect().build();
-        setConnection(newConnection);
+        const newConnection = new HubConnectionBuilder().withUrl('https://localhost:7242/gameHub').withAutomaticReconnect().build();
+        newConnection.start().then(() => setConnection(newConnection));
     }, []);
 
-    if (connection)
-        return <ConnectionContext.Provider value={connection}>{props.children}</ConnectionContext.Provider>
-    
-    return <div>CONNECTING TO HUB...</div>
+    return <ConnectionContext.Provider value={connection}>{props.children}</ConnectionContext.Provider>
+
 }
 
 export {ConnectionContext, ConnectionProvider}

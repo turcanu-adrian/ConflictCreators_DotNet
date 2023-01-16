@@ -1,31 +1,46 @@
-import { GameState } from "../types-and-interfaces/GameState";
-import { Player } from "../types-and-interfaces/Player";
+import { Cheat, GamePhase, GameType } from "../types-and-interfaces/Enums";
+import { GameState, Player } from "../types-and-interfaces/GameState";
+import { WWTBAMState } from "../types-and-interfaces/WWTBAMState";
 
-const parseGameState = (stringifiedGameState: string) : GameState => {
+const parseGameState = (stringifiedGameState: string): GameState|WWTBAMState => {
     const jsonGameState = JSON.parse(stringifiedGameState);
 
     const parsedGameState: GameState = {
-      hostPlayer: parsePlayer(jsonGameState.hostPlayer),
-      gamemode: jsonGameState.gamemode,
-      guestPlayers: jsonGameState.guestPlayers.map((it: any) => parsePlayer(it)),
-      currentPhase: jsonGameState.currentPhase,
+      hostPlayer: parsePlayer(jsonGameState.HostPlayer),
+      gameType: GameType[jsonGameState.Type as keyof typeof GameType],
+      guestPlayers: jsonGameState.GuestPlayers?.map((it: any) => parsePlayer(it)),
+      currentPhase: GamePhase[jsonGameState.CurrentPhase as keyof typeof GamePhase],
       id: jsonGameState.Id,
       audienceCount: jsonGameState.AudienceCount,
       prompt: {
         currentQuestion: jsonGameState.CurrentQuestion,
         currentQuestionAnswers: jsonGameState.CurrentQuestionAnswers
+      },
+    }
+
+    if (parsedGameState.gameType == GameType.WWTBAM){
+      const wwtbamGame: WWTBAMState = {
+        ...parsedGameState,
+        tiers: jsonGameState.Tiers,
+        availableCheats: jsonGameState.AvailableCheats?.map((it: any) => Cheat[it as keyof typeof Cheat]),
+        activeCheats: jsonGameState.ActiveCheats?.map((it: any) => Cheat[it as keyof typeof Cheat]),
+        currentTier: jsonGameState.CurrentTier,
+        audienceAnswers: jsonGameState.AudienceAnswers
       }
+
+      return wwtbamGame;
     }
   
     return parsedGameState;
 }
 
-const parsePlayer = (playerJson: any) : Player => {
+const parsePlayer = (playerJson: any): Player => {
     return {
-        Nickname: playerJson.Nickname,
-        Avatar: playerJson.Avatar,
-        Points: playerJson.Points,
-        Answer: playerJson.Answer
+        id: playerJson.Id,
+        nickname: playerJson.Nickname,
+        avatar: playerJson.Avatar,
+        points: playerJson.Points,
+        answer: playerJson.Answer
       }
 }
 
