@@ -5,7 +5,7 @@ namespace Domain.Games
 {
     public class WWTBAMGame : BaseGame
     {
-        public WWTBAMGame(Player hostPlayer, List<string> promptsUsersFilter) : base(hostPlayer, GameType.WWTBAM, promptsUsersFilter)
+        public WWTBAMGame(Player hostPlayer, List<string> promptSetsFilter) : base(hostPlayer, GameType.WWTBAM, promptSetsFilter)
         {
             Tiers = new int[] { 500, 1000, 2000, 3000, 5000, 7000, 10000, 20000, 30000, 50000, 100000, 250000, 500000, 750000, 1000000 };
             ResetAvailableCheats();

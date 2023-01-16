@@ -10,7 +10,7 @@ namespace Application.Games.Base.Commands
         public string HostName { get; set; } = null!;
         public string HostConnectionId { get; set; } = null!;
         public string GameType { get; set; } = null!;
-        public List<string> PromptsUsersFilter = null!;
+        public List<string> promptSetsFilter = null!;
     }
 
     public class CreateGameCommandHandler : IRequestHandler<CreateGameCommand, string>
@@ -24,11 +24,8 @@ namespace Application.Games.Base.Commands
         public Task<string> Handle(CreateGameCommand command, CancellationToken cancellationToken)
         {
             var hostPlayer = new Player(command.HostName, command.HostConnectionId);
-            
-            /*if (command.GameType == "WWTBAM") 
-            {
-            }*/
-            var game = new WWTBAMGame(hostPlayer, command.PromptsUsersFilter);
+
+            var game = new WWTBAMGame(hostPlayer, command.promptSetsFilter);
 
             _gameRepository.CreateGame(game);
 
