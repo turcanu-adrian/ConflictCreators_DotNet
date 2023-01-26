@@ -7,10 +7,11 @@ namespace Application.Games.Base.Commands
 {
     public class AddPlayerCommand : IRequest<PlayerType>
     {
-        public string GameId { get; set; } = null!;
-        public string Nickname { get; set; } = null!;
-        public string? Avatar { get; set; } = null;
-        public string ConnectionId { get; set; } = null!;
+        public string GameId { get; set; }
+        public string Nickname { get; set; } 
+        public Avatar Avatar { get; set; }
+        public List<Badge> Badges { get; set; }
+        public string ConnectionId { get; set; }
     }
 
     public class AddPlayerCommandHandler : IRequestHandler<AddPlayerCommand, PlayerType>
@@ -22,15 +23,9 @@ namespace Application.Games.Base.Commands
             _gameManager = gameManager;
         }
 
-        //Validator Method
-
         public Task<PlayerType> Handle(AddPlayerCommand command, CancellationToken cancellationToken)
         {
-            Player player;
-            if (command.Avatar != null)
-                player = new Player(command.Nickname, command.ConnectionId, command.Avatar);
-            else
-                player = new Player(command.Nickname, command.ConnectionId);
+            Player player = new Player(command.Nickname, command.ConnectionId, command.Avatar, command.Badges);
 
             PlayerType result = _gameManager.AddPlayerToGame(player, command.GameId);
 

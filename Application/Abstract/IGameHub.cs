@@ -1,11 +1,13 @@
-﻿namespace Application.Abstract
+﻿using Domain.Enums;
+
+namespace Application.Abstract
 {
     public interface IGameHub
     {
-        Task CreateNewGame(String nickname);
-        Task JoinGame(String name, String gameId);
-        Task GetGame(String gameId);
-        Task ContinueGame(String gameId);
-        Task SendPlayerAnswer(String answer, String gameId);
+        Task CreateNewGame(string nickname, GameType gameType, int maxGuestPlayers, string promptSetId);
+        Task JoinGame(string name, string gameId);
+        Task GetGame(string gameId);
+        Task ContinueGame(string gameId);
+        Task SendPlayerAnswer(string answer, string gameId);
     }
 }

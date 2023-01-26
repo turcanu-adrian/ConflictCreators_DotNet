@@ -24,10 +24,13 @@ namespace Application.Games.Base.Commands
         public async Task<Unit> Handle(ContinueGameCommand command, CancellationToken cancellationToken) 
         {
             BaseGame game = _gameManager.GetGame(command.GameId);
-            game.CurrentPrompt = await _promptRepository.GetRandomBySets(game.PromptSetsFilter);
+            game.CurrentPrompt = await _promptRepository.GetRandomBySet(game.PromptSetId);
 
             if (game.CurrentPhase == GamePhase.lobby)
+            {
                 game.CurrentPhase = GamePhase.prompt;
+                game.StartTime = DateTime.Now;
+            }
             else if (game.Type == GameType.WWTBAM)
             {
                 (game as WWTBAMGame).CurrentTier++;

@@ -48,12 +48,138 @@ namespace Infrastructure.Migrations
                     b.HasIndex("PromptSetId");
 
                     b.ToTable("Prompts");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = "b9bf8ab2c8d04ea680921ccfeff9a0ac",
+                            CorrectAnswer = "Yellow",
+                            PromptSetId = "fdd1fd6f2aa24d29a1a6fb710df9f033",
+                            Question = "What color is the sun?",
+                            WrongAnswers = "[\"Green\",\"Red\",\"Blue\",\"Orange\"]"
+                        },
+                        new
+                        {
+                            Id = "25fce8d270c74d0586a2c9ff32f76920",
+                            CorrectAnswer = "4",
+                            PromptSetId = "fdd1fd6f2aa24d29a1a6fb710df9f033",
+                            Question = "How many legs does a sheep have?",
+                            WrongAnswers = "[\"2\",\"3\",\"4\"]"
+                        },
+                        new
+                        {
+                            Id = "c02bbe8b4ef24b01a6a92609da732bb9",
+                            CorrectAnswer = "Paris",
+                            PromptSetId = "fdd1fd6f2aa24d29a1a6fb710df9f033",
+                            Question = "What is the capital of France?",
+                            WrongAnswers = "[\"Bucharest\",\"Rome\",\"Moscow\"]"
+                        },
+                        new
+                        {
+                            Id = "c826b8560f384f898b709bd5082d1c83",
+                            CorrectAnswer = "January",
+                            PromptSetId = "fdd1fd6f2aa24d29a1a6fb710df9f033",
+                            Question = "What month has the internship ended in?",
+                            WrongAnswers = "[\"December\",\"October\",\"February\"]"
+                        },
+                        new
+                        {
+                            Id = "024e9f4d402144aabf670c948eec49f0",
+                            CorrectAnswer = "Bucharest",
+                            PromptSetId = "fdd1fd6f2aa24d29a1a6fb710df9f033",
+                            Question = "What is the capital of Romania?",
+                            WrongAnswers = "[\"Paris\",\"Rome\",\"Texas\"]"
+                        },
+                        new
+                        {
+                            Id = "320f2aabb05747f89e7e741585652772",
+                            CorrectAnswer = "1000 grams",
+                            PromptSetId = "fdd1fd6f2aa24d29a1a6fb710df9f033",
+                            Question = "How many grams makes 1 kilogram?",
+                            WrongAnswers = "[\"10 grams\",\"100 grams\",\"1 gram\"]"
+                        },
+                        new
+                        {
+                            Id = "d01f6e51a95949d787dbdc0e9c1e01a3",
+                            CorrectAnswer = "50",
+                            PromptSetId = "fdd1fd6f2aa24d29a1a6fb710df9f033",
+                            Question = "How many states are in the United States?",
+                            WrongAnswers = "[\"40\",\"45\",\"52\"]"
+                        },
+                        new
+                        {
+                            Id = "e8d55525ab644652910b2ac03a5bf06b",
+                            CorrectAnswer = "Bald Eagle",
+                            PromptSetId = "fdd1fd6f2aa24d29a1a6fb710df9f033",
+                            Question = "What is the National Animal of the USA?",
+                            WrongAnswers = "[\"Black Bear\",\"Grizzly Bear\",\"American Bison\"]"
+                        },
+                        new
+                        {
+                            Id = "0d15de8340594103977491d0a22bf94f",
+                            CorrectAnswer = "Clownfish",
+                            PromptSetId = "fdd1fd6f2aa24d29a1a6fb710df9f033",
+                            Question = "Which type of fish is Nemo?",
+                            WrongAnswers = "[\"Swordfish\",\"Sailfish\",\"Whale\"]"
+                        },
+                        new
+                        {
+                            Id = "bfddf20ebe974a77973a2ad920dc042c",
+                            CorrectAnswer = "Asia",
+                            PromptSetId = "fdd1fd6f2aa24d29a1a6fb710df9f033",
+                            Question = "Which is the largest continent?",
+                            WrongAnswers = "[\"Europe\",\"North America\",\"Africa\"]"
+                        },
+                        new
+                        {
+                            Id = "2bb7a830c400473ab940d4331b0e6321",
+                            CorrectAnswer = "Chiuaua",
+                            PromptSetId = "fdd1fd6f2aa24d29a1a6fb710df9f033",
+                            Question = "What is the smallest breed of dog?",
+                            WrongAnswers = "[\"Golden Retriever\",\"Bulldog\",\"Pitbull\"]"
+                        },
+                        new
+                        {
+                            Id = "0bface1bcae847a6826f6a8e408de9fa",
+                            CorrectAnswer = "8",
+                            PromptSetId = "fdd1fd6f2aa24d29a1a6fb710df9f033",
+                            Question = "How many sides does an Octagon have?",
+                            WrongAnswers = "[\"4\",\"6\",\"10\"]"
+                        },
+                        new
+                        {
+                            Id = "e97187ab96a4434e8b2df87372c7b9a7",
+                            CorrectAnswer = "Parrot",
+                            PromptSetId = "fdd1fd6f2aa24d29a1a6fb710df9f033",
+                            Question = "Which bird can mimic humans?",
+                            WrongAnswers = "[\"Eagle\",\"Seagull\",\"Pelican\"]"
+                        },
+                        new
+                        {
+                            Id = "ed1d641e06c64286a47aff6038340f0b",
+                            CorrectAnswer = "Honey",
+                            PromptSetId = "fdd1fd6f2aa24d29a1a6fb710df9f033",
+                            Question = "What do bees produce?",
+                            WrongAnswers = "[\"Milk\",\"Flowers\",\"Water\"]"
+                        },
+                        new
+                        {
+                            Id = "ae99acb2348a4be49fae3e19198f1e56",
+                            CorrectAnswer = "Green",
+                            PromptSetId = "fdd1fd6f2aa24d29a1a6fb710df9f033",
+                            Question = "What color is an emerald?",
+                            WrongAnswers = "[\"Golden\",\"Black\",\"Pink\"]"
+                        });
                 });
 
             modelBuilder.Entity("Domain.Games.Elements.PromptSet", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("CreatedByUserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -64,7 +190,6 @@ namespace Infrastructure.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("UserId")
-                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
@@ -72,6 +197,15 @@ namespace Infrastructure.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("PromptSets");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = "fdd1fd6f2aa24d29a1a6fb710df9f033",
+                            CreatedByUserId = "default",
+                            Name = "Default Prompt Set",
+                            Tags = "[\"default\",\"basic\"]"
+                        });
                 });
 
             modelBuilder.Entity("Domain.User", b =>
@@ -82,8 +216,19 @@ namespace Infrastructure.Migrations
                     b.Property<int>("AccessFailedCount")
                         .HasColumnType("int");
 
+                    b.Property<int>("AchievementPoints")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Badges")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("DisplayName")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Email")
@@ -92,6 +237,12 @@ namespace Infrastructure.Migrations
 
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("bit");
+
+                    b.Property<TimeSpan>("FastestRun")
+                        .HasColumnType("time");
+
+                    b.Property<int>("GamesWon")
+                        .HasColumnType("int");
 
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("bit");
@@ -125,6 +276,9 @@ namespace Infrastructure.Migrations
                     b.Property<string>("UserName")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
+
+                    b.Property<int>("currentAvatar")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -274,24 +428,18 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("Domain.Games.Elements.Prompt", b =>
                 {
-                    b.HasOne("Domain.Games.Elements.PromptSet", "PromptSet")
+                    b.HasOne("Domain.Games.Elements.PromptSet", null)
                         .WithMany("Prompts")
                         .HasForeignKey("PromptSetId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("PromptSet");
                 });
 
             modelBuilder.Entity("Domain.Games.Elements.PromptSet", b =>
                 {
-                    b.HasOne("Domain.User", "User")
-                        .WithMany("PromptSets")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
+                    b.HasOne("Domain.User", null)
+                        .WithMany("FavouritePromptSets")
+                        .HasForeignKey("UserId");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -352,7 +500,7 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("Domain.User", b =>
                 {
-                    b.Navigation("PromptSets");
+                    b.Navigation("FavouritePromptSets");
                 });
 #pragma warning restore 612, 618
         }

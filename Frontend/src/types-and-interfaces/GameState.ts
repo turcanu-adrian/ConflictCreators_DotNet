@@ -1,4 +1,4 @@
-import { GamePhase, GameType } from "./Enums";
+import { Badge, GamePhase, GameType } from "./Enums";
 
 export interface GameState {
     gameType: GameType;
@@ -8,6 +8,7 @@ export interface GameState {
     id: string;
     audienceCount: number;
     prompt: Prompt;
+    maxGuestPlayers: number;
 }
 
 export interface Prompt {
@@ -21,4 +22,5 @@ export interface Player {
     avatar: string;
     points: number;
     answer: string;
+    badges: Badge[];
 };

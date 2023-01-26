@@ -1,4 +1,4 @@
-import { Cheat, GamePhase, GameType } from "../types-and-interfaces/Enums";
+import { Badge, Cheat, GamePhase, GameType } from "../types-and-interfaces/Enums";
 import { GameState, Player } from "../types-and-interfaces/GameState";
 import { WWTBAMState } from "../types-and-interfaces/WWTBAMState";
 
@@ -16,6 +16,7 @@ const parseGameState = (stringifiedGameState: string): GameState|WWTBAMState => 
         currentQuestion: jsonGameState.CurrentQuestion,
         currentQuestionAnswers: jsonGameState.CurrentQuestionAnswers
       },
+      maxGuestPlayers: jsonGameState.MaxGuestPlayers
     }
 
     if (parsedGameState.gameType == GameType.WWTBAM){
@@ -40,7 +41,8 @@ const parsePlayer = (playerJson: any): Player => {
         nickname: playerJson.Nickname,
         avatar: playerJson.Avatar,
         points: playerJson.Points,
-        answer: playerJson.Answer
+        answer: playerJson.Answer,
+        badges: playerJson.Badges?.map((it: any) => Badge[it as keyof typeof Badge])
       }
 }
 

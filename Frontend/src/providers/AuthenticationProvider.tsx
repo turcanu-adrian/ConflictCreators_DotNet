@@ -1,31 +1,41 @@
 import axios from "axios";
-import { createContext, ReactNode, useState } from "react";
+import { createContext, ReactNode, useEffect, useState } from "react";
 
-export const AuthContext = createContext({isAuth: false, handleLogin: (loginPayload: {username: string, password: string}) => {}, handleRegister: (registerPayload : {username: string, email: string, password: string}) => {}});
+export interface LoginPayload {
+    userName: string,
+    password: string
+};
+
+export interface RegisterPayload {
+    displayName: string,
+    userName: string,
+    email: string,
+    password: string
+}
+
+export const AuthContext = createContext<{
+    isAuth: boolean
+}>({
+    isAuth: false
+});
 
 export const AuthenticationProvider = ({ children }:{ children: ReactNode }) => {
     const [isAuth, setIsAuth ] = useState(!!localStorage.getItem("authToken"));
 
-    const handleLogin = (loginPayload: {username: string, password: string}) => {
-        axios.post("https://localhost:7242/api/users/login", loginPayload)
-            .then((response: any) => {
-                const token = response.data.token;
-                const userName = response.data.username;
+    useEffect(() => {
+        const tokenExpires = localStorage.getItem("tokenExpires");
+        if (tokenExpires)
+        {
+            const currentDate = new Date().getTime();
+            const tokenExpirationDate = Date.parse(tokenExpires);
+            
+            if ((tokenExpirationDate - currentDate)/60000 < 10)
+            {
+                localStorage.clear();
+                window.location.href = '/';
+            }
+        }
+    }, []);
 
-                localStorage.setItem("authToken", token);
-                localStorage.setItem("userName", userName);
-                window.location.href = '/'
-            })
-            .catch((err: any) => console.log(err));
-    }
-
-    const handleRegister = (registerPayload: {username: string, email: string, password: string}) => {
-        axios.post("https://localhost:7242/api/users/register", registerPayload)
-            .then((response: any) => {
-                console.log("register response");
-                console.log(response);
-            })
-    }
-
-    return <AuthContext.Provider value={{ isAuth, handleLogin, handleRegister}}>{children}</AuthContext.Provider>
+    return <AuthContext.Provider value={{ isAuth }}>{children}</AuthContext.Provider>
 }

@@ -1,4 +1,5 @@
 ﻿using Domain;
+using Domain.Enums;
 using Domain.Games.Elements;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -20,11 +21,8 @@ namespace Infrastructure
         {
             base.OnModelCreating(modelBuilder);
 
-            modelBuilder.Entity<Prompt>()
-                .HasKey(p => p.Id);
-
-            modelBuilder.Entity<PromptSet>()
-                .HasKey(p => p.Id);
+            modelBuilder.Entity<Prompt>().HasKey(p => p.Id);
+            modelBuilder.Entity<PromptSet>().HasKey(p => p.Id);
 
             modelBuilder
                 .Entity<Prompt>()
@@ -44,15 +42,18 @@ namespace Infrastructure
 
             modelBuilder.Entity<PromptSet>()
                 .HasMany(ps => ps.Prompts)
-                .WithOne(p => p.PromptSet)
+                .WithOne()
                 .HasForeignKey(p => p.PromptSetId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<User>()
-                .HasMany(u => u.PromptSets)
-                .WithOne(u => u.User)
-                .HasForeignKey(u => u.UserId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .Property(u => u.Badges)
+                .HasConversion(
+                v => JsonSerializer.Serialize(v, (JsonSerializerOptions)null),
+                v => JsonSerializer.Deserialize<ICollection<Badge>>(v, (JsonSerializerOptions)null)
+                );
+
+            modelBuilder.Seed();
         }
     }
 }

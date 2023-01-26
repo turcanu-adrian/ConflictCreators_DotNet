@@ -2,15 +2,20 @@
 using MediatR;
 using Application.Abstract;
 using Domain.Games.Elements;
+using Domain.Enums;
 
 namespace Application.Games.Base.Commands
 {
     public class CreateGameCommand : IRequest<string>
     {
-        public string HostName { get; set; } = null!;
-        public string HostConnectionId { get; set; } = null!;
-        public string GameType { get; set; } = null!;
-        public List<string> promptSetsFilter = null!;
+        public string HostName { get; set; }
+        public Avatar HostAvatar { get; set; }
+        public List<Badge> HostBadges { get; set; }
+        public string HostConnectionId { get; set; }
+        public GameType GameType { get; set; }
+        public int MaxGuestPlayers { get; set; }
+
+        public string PromptSetId { get; set; }
     }
 
     public class CreateGameCommandHandler : IRequestHandler<CreateGameCommand, string>
@@ -23,9 +28,9 @@ namespace Application.Games.Base.Commands
 
         public Task<string> Handle(CreateGameCommand command, CancellationToken cancellationToken)
         {
-            var hostPlayer = new Player(command.HostName, command.HostConnectionId);
-
-            var game = new WWTBAMGame(hostPlayer, command.promptSetsFilter);
+            var hostPlayer = new Player(command.HostName, command.HostConnectionId, command.HostAvatar, command.HostBadges);
+            
+            var game = new WWTBAMGame(hostPlayer, command.MaxGuestPlayers, command.PromptSetId);
 
             _gameRepository.CreateGame(game);
 

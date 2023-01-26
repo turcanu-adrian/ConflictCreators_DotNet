@@ -1,14 +1,15 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using MediatR;
-using WebAPI.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using WebAPI.DTOs.Prompt;
 using Application.Prompts.Commands;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNet.Identity;
-using Application;
 using System.Security.Claims;
-using Microsoft.AspNetCore.SignalR;
+using Domain.Games.Elements;
+using Domain;
+using Application.Prompts.Queries;
+using Application.PromptSets.Queries;
+using Application.PromptSets.Commands;
 
 namespace WebAPI.Controllers
 {
@@ -17,15 +18,16 @@ namespace WebAPI.Controllers
     public class PromptsController : ControllerBase
     {
         private readonly IMediator _mediator;
+        private readonly UserManager<User> _userManager;
 
-        public PromptsController(IMediator mediator)
+        public PromptsController(IMediator mediator, UserManager<User> userManager)
         {
             _mediator = mediator;
+            _userManager = userManager;
         }
 
         [HttpPost]
         [Route("add")]
-        [Authorize]
         public async Task<IActionResult> AddPrompt([FromBody] PromptAddDto prompt)
         {
             string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -33,7 +35,6 @@ namespace WebAPI.Controllers
             var result = await _mediator.Send(new AddPromptCommand
             {
                 PromptSetId= prompt.PromptSetId,
-                UserId = userId,
                 Question = prompt.Question,
                 CorrectAnswer = prompt.CorrectAnswer,
                 WrongAnswers = prompt.WrongAnswers
@@ -46,23 +47,58 @@ namespace WebAPI.Controllers
         }
 
         [HttpPost]
-        [Route("addSet")]
-        [Authorize]
-        public async Task<IActionResult> AddPromptSet([FromBody] PromptSetAddDto promptSet) 
+        [Route("remove/{promptId}")]
+        public async Task<IActionResult> RemovePrompt(string promptId)
         {
             string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            var result = await _mediator.Send(new AddPromptSetCommand
+            var result = await _mediator.Send(new RemovePromptCommand
             {
-                UserId = userId,
-                Name = promptSet.Name,
-                Tags = promptSet.Tags
+                PromptId = promptId
             });
 
             if (result)
-                return Ok("worked");
+                return Ok("removed");
 
-            return BadRequest("failed");
+            return BadRequest("prompt doesn't exist");
         }
+
+        [HttpGet("getBySet/{promptSetId}")]
+        public async Task<IEnumerable<PromptGetDtoBase>> GetAllPromptsByPromptSetId(string promptSetId)
+        {
+            string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            List<Prompt> prompts = await _mediator.Send(new GetPromptsBySetIdQuery
+            {
+                PromptSetId = promptSetId
+            });
+
+            PromptSet promptSet = await _mediator.Send(new GetPromptsSetByIdQuery
+            {
+                Id = promptSetId
+            });
+
+            if (promptSet != null && promptSet.CreatedByUserId == userId)
+            {
+                List<CreatorPromptGetDto> creatorPromptsDto = prompts.Select(p => new CreatorPromptGetDto
+                {
+                    Id = p.Id,
+                    Question = p.Question,
+                    CorrectAnswer = p.CorrectAnswer,
+                    WrongAnswers = p.WrongAnswers
+                }).ToList();
+
+                return creatorPromptsDto;
+            }
+
+            List<PromptGetDto> promptsDto = prompts.Select(p => new PromptGetDto
+            {
+                Id = p.Id,
+                Question = p.Question
+            }).ToList();
+
+            return promptsDto;
+        }
+
     }
 }

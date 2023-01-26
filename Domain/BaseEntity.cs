@@ -6,6 +6,6 @@
         {
             Id = Guid.NewGuid().ToString("N");
         }
-        public String Id { get; }
+        public string Id { get; }
     }
 }

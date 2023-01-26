@@ -19,3 +19,15 @@ export enum Cheat {
     audienceAnswer,
     splitAnswers
 }
+
+export enum AvatarEnum {
+    LULE,
+    KEKW,
+    LULW,
+    happE,
+    flushE
+}
+
+export enum Badge {
+    
+}

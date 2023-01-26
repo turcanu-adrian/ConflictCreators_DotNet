@@ -8,9 +8,9 @@ namespace Application.Abstract
     {
         void CreateGame(BaseGame game);
         PlayerType AddPlayerToGame(Player guestPlayer, string gameId);
-        void RemovePlayerFromGame(string playerId, string gameId);
+        bool RemovePlayerFromGame(string playerId, string gameId);
         BaseGame GetGame(string gameId);
-        IEnumerable<BaseGame> GetGames();
+        IEnumerable<BaseGame> GetAllGames();
         public string GetGameIdByPlayerId(string playerId);
         void EndGame(BaseGame game);
         void RemoveGame(BaseGame game);

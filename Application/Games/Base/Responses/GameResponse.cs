@@ -7,6 +7,8 @@ namespace Application.Games.Base.Responses
     {
         public GameResponse(BaseGame game)
         {
+            StartTime = game.StartTime;
+            EndTime = game.EndTime;
             Id = game.Id;
 
             if (game.CurrentPrompt != null)
@@ -27,7 +29,8 @@ namespace Application.Games.Base.Responses
                 Nickname = game.HostPlayer.Nickname,
                 Points = game.HostPlayer.Points,
                 Answer = game.HostPlayer.Answer,
-                Id = game.HostPlayer.Nickname + '-' + game.HostPlayer.Id
+                Id =  game.HostPlayer.Id,
+                Badges= game.HostPlayer.Badges
             };
 
             GuestPlayers = game.GuestPlayers.Select(i => new PlayerModel
@@ -36,14 +39,20 @@ namespace Application.Games.Base.Responses
                 Nickname = i.Nickname,
                 Points = i.Points,
                 Answer = i.Answer,
-                Id = i.Nickname + "-" + i.Id
+                Id = i.Id,
+                Badges = game.HostPlayer.Badges
             }).ToList();
 
             Type = game.Type;
+
+            MaxGuestPlayers = game.MaxGuestPlayers;
         }
+        public DateTime StartTime { get; set; }
+        public DateTime EndTime { get; set; }
         public int AudienceCount { get; set; }
         public string? CurrentQuestion { get; set; }
         public List<string>? CurrentQuestionAnswers { get; set; }
+        public int MaxGuestPlayers { get; set; }
 
         private void ShuffleAnswers()
         {

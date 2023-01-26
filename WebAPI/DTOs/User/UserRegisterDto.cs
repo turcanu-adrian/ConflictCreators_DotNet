@@ -18,5 +18,10 @@ namespace WebAPI.DTOs.User
         [MaxLength(30)]
         [MinLength(6)]
         public string Password { get; set; }
+
+        [Required]
+        [MaxLength(30)]
+        [MinLength(6)]
+        public string DisplayName { get; set; }
     }
 }

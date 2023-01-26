@@ -13,7 +13,10 @@ namespace Infrastructure
         public void CreateGame(BaseGame game)
         {
             _games.Add(game);
-            _playerConnections.Add(game.HostPlayer.Id, game.Id);
+            if (_playerConnections.ContainsKey(game.HostPlayer.Id))
+                _playerConnections[game.HostPlayer.Id] = game.Id;
+            else
+                _playerConnections.Add(game.HostPlayer.Id, game.Id);
         }
 
         public void RemoveGame(BaseGame game)
@@ -35,7 +38,7 @@ namespace Infrastructure
             return PlayerType.none;
         }
 
-        public void RemovePlayerFromGame(string playerId, string gameId)
+        public bool RemovePlayerFromGame(string playerId, string gameId)
         {
             BaseGame game = _games.FirstOrDefault(o => o.Id == gameId);
 
@@ -43,12 +46,17 @@ namespace Infrastructure
             {
                 Player player = game.GuestPlayers.FirstOrDefault(o => o.Id == playerId) ?? game.AudiencePlayers.FirstOrDefault(o => o.Id == playerId) ?? game.HostPlayer;
                 if (player != null)
+                {
                     _playerConnections.Remove(playerId);
-                if (player == game.HostPlayer)
-                    EndGame(game);
-                else
-                    game.RemovePlayer(player);
+                    if (player == game.HostPlayer)
+                        EndGame(game);
+                    else
+                        game.RemovePlayer(player);
+                    return true;
+                }
             }
+
+            return false;
         }
 
         public BaseGame GetGame(string gameId)
@@ -62,10 +70,10 @@ namespace Infrastructure
         {
             if (_playerConnections.ContainsKey(playerId))
                 return _playerConnections[playerId];
-            return "nogamefound";
+            return null;
         }
 
-        public IEnumerable<BaseGame> GetGames()
+        public IEnumerable<BaseGame> GetAllGames()
         {
             return _games;
         }
@@ -73,7 +81,7 @@ namespace Infrastructure
         public async void EndGame(BaseGame game)
         {
             game.CurrentPhase = GamePhase.gameover;
-            await Task.Delay(3000);
+            await Task.Delay(10000);
             RemoveGame(game);
         }
     }

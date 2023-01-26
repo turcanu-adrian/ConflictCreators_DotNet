@@ -11,7 +11,6 @@ namespace Domain.Games.Elements
         public virtual ICollection<string> Tags { get; set; }
         public virtual ICollection<Prompt> Prompts { get; set; }
         public string Name { get ; set; }
-        public virtual User User { get; set; }
-        public string UserId { get; set; }
+        public string CreatedByUserId { get; set; }
     }
 }

@@ -20,16 +20,14 @@ namespace Infrastructure.Repositories
 
         public async Task<List<Prompt>> GetAll()
         {
-            return await _context.Prompts
-                .Take(100)
-                .ToListAsync();
+            return await _context.Prompts.ToListAsync();
         }
 
-        public async Task<Prompt> GetRandomBySets(List<string> promptSetsIds)
+        public async Task<Prompt> GetRandomBySet(string promptSetId)
         {
             Random rnd = new Random();
 
-            List<Prompt> prompts = await _context.Prompts.Where(p => promptSetsIds.Contains(p.PromptSet.Id)).ToListAsync();
+            List<Prompt> prompts = await _context.Prompts.Where(p=> p.PromptSetId == promptSetId).ToListAsync();
             Prompt prompt = prompts[rnd.Next(prompts.Count)];
             return prompt;
         }
@@ -42,6 +40,16 @@ namespace Infrastructure.Repositories
         public async Task Update(Prompt prompt)
         {
             _context.Prompts.Update(prompt);
+        }
+
+        public async Task<List<Prompt>> GetBySetId(string setId)
+        {
+            return await _context.Prompts.Where(p => p.PromptSetId == setId).ToListAsync();
+        }
+
+        public async Task<Prompt> GetById(string id)
+        {
+            return await _context.Prompts.FirstAsync(p => p.Id == id);
         }
     }
 }

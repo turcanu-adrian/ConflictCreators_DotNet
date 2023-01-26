@@ -1,4 +1,5 @@
-﻿using Domain.Games.Elements;
+﻿using Domain;
+using Domain.Games.Elements;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,5 +14,7 @@ namespace Application.Abstract
         void Remove(PromptSet promptSet);
         Task<List<PromptSet>> GetAll();
         Task Update(PromptSet promptSet);
+        Task<PromptSet> GetById(string promptSetId);
+        Task<List<PromptSet>> GetAllCreatedBy(string userId);
     }
 }

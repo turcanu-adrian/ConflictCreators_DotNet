@@ -8,54 +8,107 @@ using Application.Games.Base.Responses;
 using Domain.Enums;
 using Application.Games.WWTBAM.Responses;
 using Application.Games.WWTBAM.Commands;
-using Application.Prompts.Commands;
+using Microsoft.AspNetCore.Identity;
+using Domain;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
+using Application.PromptSets.Queries;
+using Domain.Games;
 
 namespace WebAPI.Hubs
 {
+    [Authorize]
+    [AllowAnonymous]
     public class GameHub : Hub<IGameClient>, IGameHub
     {
         private readonly IMediator _mediator;
+        private readonly UserManager<User> _userManager;
 
-        public GameHub(IMediator mediator)
+        public GameHub(IMediator mediator, UserManager<User> userManager)
         {
             _mediator = mediator;
+            _userManager = userManager;
         }
 
-        public override async Task OnConnectedAsync()
+        public async Task CheckPlayerStatus()
         {
-            Console.WriteLine(Context.ConnectionId + " has connected");
+            string userId = Context.User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (userId != null)
+            {
+                string gameId = await _mediator.Send(new GetGameIdByPlayerIdQuery
+                {
+                    PlayerId = userId
+                });
+
+                if (gameId != null)
+                {
+                    GameResponse game = await _mediator.Send(new GetGameByIdQuery
+                    {
+                        Id = gameId
+                    });
+
+                    if (game != null && game.CurrentPhase != GamePhase.gameover)
+                    {
+                        await Groups.AddToGroupAsync(Context.ConnectionId, gameId);
+
+                        PlayerType playerType = await _mediator.Send(new GetPlayerTypeByGameIdQuery
+                        {
+                            GameId = gameId,
+                            PlayerId = userId
+                        });
+
+                        await Clients.Caller.JoinedGameAs(JsonConvert.SerializeObject(playerType, new Newtonsoft.Json.Converters.StringEnumConverter()));
+                        await GetGame(gameId);
+                    }
+                }
+            }
         }
 
         public override async Task OnDisconnectedAsync(Exception exception)
         {
-            Console.WriteLine(Context.ConnectionId + " has disconnected, removing them from game");
+            string userId = Context.User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            String gameId = await _mediator.Send(new GetGameIdByPlayerIdQuery
+            string gameId = await _mediator.Send(new GetGameIdByPlayerIdQuery
             {
                 PlayerId = Context.ConnectionId
             });
 
-            if (gameId != "nogamefound")
+            if (gameId != null && userId == null)
             {
-                String result = await _mediator.Send(new RemovePlayerCommand
+                bool result = await _mediator.Send(new RemovePlayerCommand
                 {
                     PlayerId = Context.ConnectionId,
                     GameId = gameId
                 });
 
-                await base.OnDisconnectedAsync(exception);
-                await GetGame(result);
+                if (result)
+                {
+                    await base.OnDisconnectedAsync(exception);
+                    await GetGame(gameId);
+                }
             }
         }
 
-        public async Task CreateNewGame(string nickname)
+        public async Task CreateNewGame(string nickname, GameType gameType, int maxGuestPlayers, string promptsSetId)
         {
+            string userId = Context.User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            User user = await _userManager.FindByIdAsync(userId);
+
+            string hostName = user == null ? nickname : user.DisplayName;
+            Avatar hostAvatar = user != null ? user.currentAvatar : Avatar.LULE;
+            List<Badge> badges = user != null ? user.Badges.ToList() : new List<Badge>();
+
             string gameId = await _mediator.Send(new CreateGameCommand
             {
-                HostName = nickname,
-                HostConnectionId = Context.ConnectionId,
-                GameType = "WWTBAM",
-                promptSetId = new List<string> { "97d2cfc1a93646a990abf53166da7630" }
+                HostName = hostName,
+                HostAvatar = hostAvatar,
+                HostBadges = badges,
+                HostConnectionId = userId ?? Context.ConnectionId,
+                GameType = gameType,
+                MaxGuestPlayers = maxGuestPlayers,
+                PromptSetId = promptsSetId
             });
 
             await Groups.AddToGroupAsync(Context.ConnectionId, gameId);
@@ -63,26 +116,41 @@ namespace WebAPI.Hubs
             await GetGame(gameId);
         }
 
-        public async Task JoinGame(String name, String gameId)
+        public async Task JoinGame(string name, string gameId)
         {
-            Console.WriteLine("new player joined game");
+            string userId = Context.User.FindFirstValue(ClaimTypes.NameIdentifier);
+            User user = await _userManager.FindByIdAsync(userId);
 
-            PlayerType result = await _mediator.Send(new AddPlayerCommand
-            {
-                GameId = gameId,
-                Nickname = name,
-                ConnectionId = Context.ConnectionId
+            string playerId = userId ?? Context.ConnectionId;
+            
+            string currentGameId = await _mediator.Send(new GetGameIdByPlayerIdQuery
+                {
+                    PlayerId = playerId
             });
 
-            if (result != PlayerType.none)
+            List<Badge> badges = user != null ? user.Badges.ToList() : new List<Badge>();
+
+            if (currentGameId == null)
             {
-                await Groups.AddToGroupAsync(Context.ConnectionId, gameId);
-                await Clients.Caller.JoinedGameAs(JsonConvert.SerializeObject(result, new Newtonsoft.Json.Converters.StringEnumConverter()));
-                await GetGame(gameId);
+                PlayerType result = await _mediator.Send(new AddPlayerCommand
+                {
+                    GameId = gameId,
+                    Nickname = name,
+                    ConnectionId = playerId,
+                    Avatar = user != null ? user.currentAvatar : Avatar.LULE,
+                    Badges = badges
+                });
+
+                if (result != PlayerType.none)
+                {
+                    await Groups.AddToGroupAsync(Context.ConnectionId, gameId);
+                    await Clients.Caller.JoinedGameAs(JsonConvert.SerializeObject(result, new Newtonsoft.Json.Converters.StringEnumConverter()));
+                    await GetGame(gameId);
+                }
             }
         }
 
-        public async Task GetGame(String id)
+        public async Task GetGame(string id)
         {
             GameResponse game = await _mediator.Send(new GetGameByIdQuery
             {
@@ -94,12 +162,16 @@ namespace WebAPI.Hubs
                     await Clients.Group(id).ReceiveGameState(JsonConvert.SerializeObject(game as WWTBAMResponse, new Newtonsoft.Json.Converters.StringEnumConverter()));
         }
 
-        public async Task SendPlayerAnswer(String answer, String gameId)
+        public async Task SendPlayerAnswer(string answer, string gameId)
         {
+            string userId = Context.User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            string playerId = userId ?? Context.ConnectionId;
+
             PlayerType playerType = await _mediator.Send(new SetPlayerAnswerCommand
             {
                 Answer = answer,
-                PlayerId = Context.ConnectionId,
+                PlayerId = playerId,
                 GameId = gameId
             });
 
@@ -109,14 +181,34 @@ namespace WebAPI.Hubs
                 {
                     GameId = gameId
                 });
+
                 await Clients.Caller.ReceiveRightAnswer(rightAnswer);
             }
 
             await GetGame(gameId);
         }
 
-        public async Task EndGame(String gameId)
+        public async Task EndGame(string gameId)
         {
+            string userId = Context.User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            await UpdatePlayerPoints(gameId);
+
+            GameResponse game = await _mediator.Send(new GetGameByIdQuery {Id= gameId});
+
+            User user = await _userManager.FindByIdAsync(userId);
+
+            if (user != null && (game as WWTBAMResponse).CurrentTier == 14)
+            {
+                TimeSpan gameDuration = DateTime.Now - game.StartTime;
+                
+                if ((gameDuration < user.FastestRun) || (user.FastestRun == TimeSpan.Zero))
+                {
+                    user.FastestRun = gameDuration;
+                    await _userManager.UpdateAsync(user);
+                }
+            }
+
             await _mediator.Send(new EndGameCommand
             {
                 GameId = gameId
@@ -147,5 +239,73 @@ namespace WebAPI.Hubs
                 await GetGame(gameId);
         }
 
+        private async Task UpdatePlayerPoints(string gameId)
+        {
+            GameResponse game = await _mediator.Send(new GetGameByIdQuery
+            {
+                Id = gameId
+            });
+
+            User hostPlayerUser = await _userManager.FindByIdAsync(game.HostPlayer.Id);
+
+            if (hostPlayerUser != null)
+            {
+                hostPlayerUser.AchievementPoints += game.HostPlayer.Points;
+                await _userManager.UpdateAsync(hostPlayerUser);
+            }
+
+            game.GuestPlayers.ForEach(async guestPlayer =>
+            {
+                User guestPlayerUser = await _userManager.FindByIdAsync(guestPlayer.Id);
+
+                if (guestPlayerUser != null)
+                {
+                    guestPlayerUser.AchievementPoints += guestPlayer.Points;
+                    await _userManager.UpdateAsync(guestPlayerUser);
+                }
+            });
+
+        }
+
+        public async Task<string> GetAllGames(string searchValue, bool showFull, bool showEmpty)
+        {
+            var result = await _mediator.Send(new GetGamesQuery
+            {
+                SearchValue= searchValue,
+                GetFull = showFull,
+                GetEmpty = showEmpty
+            });
+
+            if (result != null)
+                return JsonConvert.SerializeObject(result, new Newtonsoft.Json.Converters.StringEnumConverter());
+
+            return JsonConvert.SerializeObject(new WWTBAMResponse[0], new Newtonsoft.Json.Converters.StringEnumConverter());
+        }
+
+        public async Task LeaveGame()
+        {
+            string userId = Context.User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            string playerId = userId ?? Context.ConnectionId;
+
+            string gameId = await _mediator.Send(new GetGameIdByPlayerIdQuery
+            {
+                PlayerId = playerId
+            });
+
+            if (gameId != null)
+            {
+                bool result = await _mediator.Send(new RemovePlayerCommand {
+                    GameId = gameId, 
+                    PlayerId = playerId 
+                });
+
+                if (result)
+                {
+                    await Groups.RemoveFromGroupAsync(Context.ConnectionId, gameId);
+                    await GetGame(gameId);
+                }
+            }
+        }
     }
 }

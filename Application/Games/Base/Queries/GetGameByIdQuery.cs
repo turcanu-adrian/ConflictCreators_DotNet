@@ -14,16 +14,16 @@ namespace Application.Games.Base.Queries
     }
     public class GetGameByIdQueryHandler : IRequestHandler<GetGameByIdQuery, GameResponse>
     {
-        private readonly IGameManager _gameRepository;
+        private readonly IGameManager _gameManager;
 
-        public GetGameByIdQueryHandler(IGameManager gameRepository)
+        public GetGameByIdQueryHandler(IGameManager gameManager)
         {
-            _gameRepository = gameRepository;
+            _gameManager = gameManager;
         }
 
         public Task<GameResponse> Handle(GetGameByIdQuery query, CancellationToken cancellationToken)
         {
-            BaseGame game = _gameRepository.GetGame(query.Id);
+            BaseGame game = _gameManager.GetGame(query.Id);
 
             if (game == null)
                 return null;

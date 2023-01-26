@@ -3,11 +3,7 @@ using Domain;
 using Domain.Games.Elements;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace Application
 {
@@ -15,35 +11,38 @@ namespace Application
     {
         public string UserId { get; set; }
         public string Name { get; set; }
-        public List<string> Tags { get; set; }
+        public string[] Tags { get; set; }
     }
 
     public class AddPromptSetCommandHandler : IRequestHandler<AddPromptSetCommand, bool>
     {
-        private readonly UserManager<User> _userManager;
         private readonly IUnitOfWork _unitOfWork;
 
-        public AddPromptSetCommandHandler(UserManager<User> userManager, IUnitOfWork unitOfWork)
+        public AddPromptSetCommandHandler(IUnitOfWork unitOfWork)
         {
-            _userManager = userManager;
             _unitOfWork = unitOfWork;
         }
 
         public async Task<bool> Handle(AddPromptSetCommand command, CancellationToken cancellationToken)
         {
-            User user = await _userManager.FindByIdAsync(command.UserId);
-            if (user != null) 
+            try
             {
                 PromptSet promptSet = new PromptSet
                 {
-                    UserId = command.UserId,
+                    CreatedByUserId = command.UserId,
                     Name = command.Name,
-                    Tags = command.Tags
+                    Tags = command.Tags.ToList()
                 };
+
                 await _unitOfWork.PromptSetRepository.Add(promptSet);
                 await _unitOfWork.Save();
                 return true;
             }
+            catch(Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
+
             return false;
          }
     }

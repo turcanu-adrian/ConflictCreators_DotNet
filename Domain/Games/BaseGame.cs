@@ -7,17 +7,19 @@ namespace Domain.Games
 {
     public abstract class BaseGame : BaseEntity
     {
-        public BaseGame(Player hostPlayer, GameType gameType, List<string> promptSetsFilter)
+        public BaseGame(Player hostPlayer, GameType gameType, int maxGuestPlayers, string promptSetId)
         {
             HostPlayer = hostPlayer;
             GuestPlayers = new();
             AudiencePlayers = new();
             CurrentPhase = GamePhase.lobby;
-            MaxGuestPlayers = 4;
+            MaxGuestPlayers = maxGuestPlayers;
             Type = gameType;
-            PromptSetsFilter = promptSetsFilter;
+            PromptSetId = promptSetId;
         }
-        public List<string> PromptSetsFilter { get; set; }
+        public DateTime StartTime { get; set; }
+        public DateTime EndTime { get; set; }
+        public string PromptSetId { get; set; }
         public GameType Type { get; set; }
         public Player HostPlayer { get; }
         public List<Player> GuestPlayers { get; }
@@ -45,7 +47,7 @@ namespace Domain.Games
                 AudiencePlayers.Remove(player);
         }
 
-        public Player GetPlayer(String playerId)
+        public Player GetPlayer(string playerId)
         {
             if (HostPlayer.Id == playerId) 
                 return HostPlayer;

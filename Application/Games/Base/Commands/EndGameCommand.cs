@@ -1,21 +1,15 @@
 ﻿using Application.Abstract;
 using Domain.Games;
-using Domain.Games.Elements;
 using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Application.Games.Base.Commands
 {
-    public class EndGameCommand : IRequest<Unit>
+    public class EndGameCommand : IRequest<BaseGame>
     {
         public string GameId { get; set; } = null!;
     }
 
-    public class EndGameCommandHandler : IRequestHandler<EndGameCommand, Unit>
+    public class EndGameCommandHandler : IRequestHandler<EndGameCommand, BaseGame>
     {
         private readonly IGameManager _gameManager;
 
@@ -24,11 +18,12 @@ namespace Application.Games.Base.Commands
             _gameManager = gameManager;
         }
 
-        public Task<Unit> Handle(EndGameCommand command, CancellationToken cancellationToken)
+        public Task<BaseGame> Handle(EndGameCommand command, CancellationToken cancellationToken)
         {
             BaseGame game = _gameManager.GetGame(command.GameId);
+            game.EndTime = DateTime.Now;
             _gameManager.EndGame(game);
-            return Task.FromResult(Unit.Value);
+            return Task.FromResult(game);
         }
     }
 }

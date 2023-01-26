@@ -1,43 +1,55 @@
 ﻿using Domain;
-using Domain.Games.Elements;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.IdentityModel.Tokens.Jwt;
-using MediatR;
-using Application.Users.Commands;
 using WebAPI.DTOs.User;
 using Microsoft.AspNetCore.Authorization;
+using Domain.Enums;
+using System.Security.Claims;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using Microsoft.EntityFrameworkCore;
 
 namespace WebAPI
 {
     [Route("api/users")]
     public class UsersController : ControllerBase
     {
-        private readonly IMediator _mediator;
+        private readonly UserManager<User> _userManager;
 
-        public UsersController(IMediator mediator)
+        public UsersController(UserManager<User> userManager)
         {
-            _mediator = mediator;
+            _userManager = userManager;
         }
 
         [HttpPost]
         [Route("login")]
         public async Task<IActionResult> Login([FromBody] UserLoginDto userDto)
         {
-            Console.WriteLine(userDto.UserName);
-            var result = await _mediator.Send(new LoginUserCommand
-            {
-                UserName = userDto.UserName,
-                Password = userDto.Password
-            });
+            User user = await _userManager.FindByNameAsync(userDto.UserName);
 
-            if (result!=null)
+            if (user != null && await _userManager.CheckPasswordAsync(user, userDto.Password))
             {
+                var authClaims = new List<Claim>
+                {
+                    new Claim(ClaimTypes.Name, user.UserName),
+                    new Claim(ClaimTypes.NameIdentifier, user.Id)
+                };
+
+                SymmetricSecurityKey authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("ee442f33-e195-4896-85b7-f6ce18bfdcab"));
+
+                JwtSecurityToken token = new JwtSecurityToken(
+                    issuer: "https://localhost:7242",
+                    claims: authClaims,
+                    expires: DateTime.Now.AddHours(3),
+                    signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256)
+                    );
+
                 return Ok(new
                 {
-                    token = new JwtSecurityTokenHandler().WriteToken(result),
-                    expiration = result.ValidTo,
-                    username = userDto.UserName
+                    token = new JwtSecurityTokenHandler().WriteToken(token),
+                    expiration = token.ValidTo,
+                    username = user.UserName
                 });
             }
 
@@ -48,25 +60,78 @@ namespace WebAPI
         [Route("register")]
         public async Task<IActionResult> Register([FromBody] UserRegisterDto userDto)
         {
-            Console.WriteLine("New register request with parameters " + userDto.UserName + " " + userDto.Email + " " + userDto.Password);
-            IdentityResult result = await _mediator.Send(new RegisterUserCommand
-            {
-                UserName = userDto.UserName,
-                Email = userDto.Email,
-                Password = userDto.Password
-            });
+            User user = await _userManager.FindByNameAsync(userDto.UserName);
 
-            if (result == null)
+            if (user == null)
             {
-                return BadRequest("User already exists");
+                User newUser = new User
+                {
+                    UserName = userDto.UserName,
+                    DisplayName = userDto.DisplayName,
+                    Email = userDto.Email
+                };
+
+                var result = await _userManager.CreateAsync(newUser, userDto.Password);
+
+                if (!result.Succeeded)
+                    return BadRequest("Failed to create user");
+
+                return Ok("User created successfully");
             }
+
+            return BadRequest("User already exists");
+        }
+
+        [Authorize]
+        [HttpPost]
+        [Route("setAvatar/{avatar}")]
+        public async Task<IActionResult> SetAvatar(Avatar avatar)
+        {
+            string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            User user = await _userManager.FindByIdAsync(userId);
+
+            user.currentAvatar = avatar;
+            
+            var result = await _userManager.UpdateAsync(user);
 
             if (!result.Succeeded)
-            {
-                return BadRequest("Failed to create user");
-            }
+                return BadRequest("Avatar change failed");
 
-            return Ok("User created successfully");
+            return Ok("Avatar changed successfully");
+        }
+
+        [AllowAnonymous]
+        [Authorize]
+        [HttpGet]
+        [Route("getAvatar")]
+        public async Task<Avatar> GetAvatar()
+        {
+            string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            User user = await _userManager.FindByIdAsync(userId);
+
+            if (user != null)
+                return user.currentAvatar;
+
+            return Avatar.LULE;
+        }
+
+        [HttpGet]
+        [Route("getLeaderboard")]
+        public async Task<IEnumerable<LeaderboardEntryDto>> GetLeaderboard()
+        {
+            User[] topUsersByPoints = await _userManager.Users.OrderByDescending(u => u.AchievementPoints).Take(20).ToArrayAsync();
+
+            LeaderboardEntryDto[] leaderboardEntryDto = topUsersByPoints.Select(entry => new LeaderboardEntryDto
+            {
+                AchievementPoints = entry.AchievementPoints,
+                Name = entry.DisplayName,
+                FastestGame = entry.FastestRun,
+                Avatar = entry.currentAvatar
+            }).ToArray();
+
+            return leaderboardEntryDto;
         }
     }
 }
